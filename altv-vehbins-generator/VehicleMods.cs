@@ -11,6 +11,7 @@ namespace AltV.Generator
 {
 	static class VehicleMods
 	{
+        private static readonly ushort FILE_VERSION = 1;
         enum ModType
         {
             UNKNOWN = -1,
@@ -132,9 +133,7 @@ namespace AltV.Generator
                 }
                 tempList.Add(kit);
 
-                Console.WriteLine($"Kit: {kitData["kitName"]} - {kit.Kits.Count}");
-
-                //Console.WriteLine(JsonConvert.SerializeObject(kit));
+                Utils.Log.Info($"Processing \"{kitName}\" kit");
             }
 
             return tempList;
@@ -168,6 +167,8 @@ namespace AltV.Generator
                 "./dlc_patch/"
             };
 
+            Utils.Log.Info($"Process all \"carcols.json\" file inside \"{sourcePath}\"");
+
             List<ModKit> modKits = new List<ModKit>();
             foreach(var search in searchPath)
             {
@@ -180,7 +181,6 @@ namespace AltV.Generator
                         continue;
 
                     var carcol = ParseCarcol(filePath);
-                    //modKits = modKits.Concat(carcol).ToList();
                     modKits = modKits.Concat(carcol)
                         .ToLookup(p => p.KitName)
                         .Select(g => g.Aggregate((p1, p2) => new ModKit
@@ -189,14 +189,41 @@ namespace AltV.Generator
                             KitName = p2.KitName,
                             Kits = p2.Kits
                         })).ToList();
-
-                    //modKits = modKits.Union(ParseCarcol(filePath), new ModKitsComparer()).ToList();
                 }
 			}
 
             modKits = modKits.OrderBy(x => x.Id).ToList();
-            File.WriteAllText("vehicles_test.json", JsonConvert.SerializeObject(modKits, Formatting.Indented));
-		}
+
+            var jsonOutput = Path.ChangeExtension(outputFilePath, ".json");
+            Utils.Log.Info($"Save vehicle mods in json file format to \"{jsonOutput}\"");
+            File.WriteAllText(jsonOutput, JsonConvert.SerializeObject(modKits, Formatting.Indented));
+
+            Utils.Log.Info($"Generate bin file and save it to \"{outputFilePath}\"");
+            using (BinaryWriter writer = new BinaryWriter(File.Open(outputFilePath, FileMode.Create)))
+            {
+                writer.Write("MO".ToCharArray());
+                writer.Write(FILE_VERSION);
+                
+                foreach(var mod in modKits)
+                {
+                    writer.Write(Convert.ToUInt16(mod.Id));
+                    writer.Write(Convert.ToUInt16(mod.KitName.Length));
+                    writer.Write(mod.KitName.ToCharArray());
+                    writer.Write((byte)mod.Kits.Count);
+
+                    foreach(var kit in mod.Kits)
+                    {
+                        writer.Write((byte)kit.Key);
+                        writer.Write((byte)kit.Value.Count);
+
+                        foreach (var modId in kit.Value)
+                        {
+                            writer.Write((ushort)modId);
+                        }
+                    }
+                }
+            }
+        }
 
         private static List<string> GetDLC(string sourcePath)
         {

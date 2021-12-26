@@ -7,6 +7,14 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <Compile Remove="bin\**" />
+    <EmbeddedResource Remove="bin\**" />
+    <None Remove="bin\**" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <None Remove="Resources\carcols.json" />
+    <None Remove="Resources\carvariations.json" />
     <None Remove="Resources\gtav_aes_key.dat" />
     <None Remove="Resources\gtav_hash_lut.dat" />
     <None Remove="Resources\gtav_ng_decrypt_tables.dat" />
@@ -16,8 +24,13 @@
   </ItemGroup>
 
   <ItemGroup>
-    <None Include="bin\Debug\net5.0\carcols.json" />
-    <None Include="bin\Debug\net5.0\carvariations.json" />
+    <Resource Include="bin\Debug\net5.0\carvariations.json" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Resource Include="bin\Debug\net5.0\carcols.json" />
+    <Resource Include="Resources\carcols.json" />
+    <Resource Include="Resources\carvariations.json" />
   </ItemGroup>
 
   <ItemGroup>
@@ -49,10 +62,6 @@
       <Generator>ResXFileCodeGenerator</Generator>
       <LastGenOutput>Base.Designer.cs</LastGenOutput>
     </EmbeddedResource>
-  </ItemGroup>
-
-  <ItemGroup>
-    <Folder Include="Resources\" />
   </ItemGroup>
 
 </Project>

@@ -58,7 +58,7 @@ namespace AltV.Generator
                 File.WriteAllBytes(outputPath + "carvariations.json", Base.carvariations);
             }
 
-            /*DirectoryInfo gtaDir = new DirectoryInfo(gtaPath);
+            DirectoryInfo gtaDir = new DirectoryInfo(gtaPath);
             RpfManager rpfManager = new RpfManager();
 
             Utils.Log.Info("Scanning GTA path for file infos");
@@ -119,40 +119,9 @@ namespace AltV.Generator
 						}
 					}
                 }
-            }*/
+            }
 
-            /*Dictionary<uint, string> hashLookup = new Dictionary<uint, string>();
-            foreach(var h in hashes)
-            {
-                hashLookup.TryAdd(JenkHash.GenHash(h), h);
-                hashLookup.TryAdd(JenkHash.GenHash(h.ToLower()), h);
-			}*/
-
-            /*DirectoryInfo outputDir = new DirectoryInfo(Environment.CurrentDirectory + outputPath);
-            Utils.Log.Info("Try to lookup hashes in ymt files");
-            {
-                foreach (var fileInfo in outputDir.GetFiles("*.ymt", SearchOption.AllDirectories))
-                {
-                    var shit = File.ReadAllText(fileInfo.FullName);
-                    Regex hashRx = new Regex(@"\bhash_(\w+)\b", RegexOptions.Compiled | RegexOptions.IgnoreCase);
-                    MatchCollection hashMatches = hashRx.Matches(shit);
-                    foreach (Match hash in hashMatches)
-                    {
-                        var hashString = Convert.ToUInt32(hash.Groups[1].ToString(), 16);
-
-                        if (hashLookup.ContainsKey(hashString))
-                        {
-                            string lookupString = hashLookup[hashString];
-
-                            shit = shit.Replace(hash.Groups[0].ToString(), lookupString);
-                        }
-                    }
-
-                    File.WriteAllText(fileInfo.FullName, shit);
-                }
-            }*/
-
-            /*SortedDictionary<string, int> vehicleMap = new SortedDictionary<string, int>();
+            SortedDictionary<string, int> vehicleMap = new SortedDictionary<string, int>();
             Utils.Log.Info("Extracting all the vehicles name from vehicles.json files");
             {
                 Regex modelRx = new Regex("\"modelName\": *\"(.*)\"", RegexOptions.Compiled | RegexOptions.IgnoreCase);
@@ -199,10 +168,7 @@ namespace AltV.Generator
 
                 Utils.Log.Info("Saving vehicles list and wheels count to \"vehicleList.json\"");
                 File.WriteAllText(outputPath + "vehicleList.json", JsonConvert.SerializeObject(vehicleMap, Newtonsoft.Json.Formatting.Indented));
-			}*/
-
-            var carcolData = File.ReadAllText(outputPath + "carcols.json");
-            dynamic carcolJson = JsonConvert.DeserializeObject(carcolData);
+			}
 
             VehicleMods.GenerateBin(outputPath, outputPath + "vehmods.bin");
         }
