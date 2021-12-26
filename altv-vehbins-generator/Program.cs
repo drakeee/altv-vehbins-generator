@@ -4,6 +4,8 @@ using System.IO;
 using System.Linq;
 using System.Text;
 using System.Text.RegularExpressions;
+using System.Xml;
+using System.Xml.Linq;
 using Newtonsoft.Json;
 using RageKit;
 using RageKit.GameFiles;
@@ -49,11 +51,18 @@ namespace AltV.Generator
             GTA5Keys.PC_NG_ENCRYPT_LUTs = CryptoIO.ReadNgLuts(Keys.gtav_ng_encrypt_luts);
             GTA5Keys.PC_LUT = Keys.gtav_hash_lut;
 
-            DirectoryInfo gtaDir = new DirectoryInfo(gtaPath);
+            Utils.Log.Info("Create output directory and copy base json files to it");
+            {
+                Directory.CreateDirectory(outputPath);
+                File.WriteAllBytes(outputPath + "carcols.json", Base.carcols);
+                File.WriteAllBytes(outputPath + "carvariations.json", Base.carvariations);
+            }
+
+            /*DirectoryInfo gtaDir = new DirectoryInfo(gtaPath);
             RpfManager rpfManager = new RpfManager();
 
             Utils.Log.Info("Scanning GTA path for file infos");
-            rpfManager.Init(gtaPath, (string status) => { Utils.Log.Status(status); }, (string error) => { });
+            rpfManager.Init(gtaPath, (string status) => { Utils.Log.Status(status); }, (string error) => { }, false, false);
 
             Utils.Log.Info("Extracting dlclist.xml from RPF file");
             {
@@ -70,12 +79,13 @@ namespace AltV.Generator
             }
 
             List<string> filesToSearch = new List<string>{
-                "carcols",
+                "carcols.meta",
                 "vehicles.meta",
-                "carvariations"
+                "carvariations.meta"
             };
 
             Regex rx = new Regex(@"\b(dlc_patch|dlcpacks)\\(\w+)\b", RegexOptions.Compiled | RegexOptions.IgnoreCase);
+            //List<string> hashes = new List<string>();
             foreach (var fileSearch in filesToSearch)
             {
                 Utils.Log.Info($"Extracting \"{fileSearch}\" files for further processing");
@@ -96,15 +106,53 @@ namespace AltV.Generator
                         if (entry.Name.EndsWith(".ymt"))
                         {
                             YmtFile ymtFile = rpfManager.GetFile<YmtFile>(entry);
-                            Utils.XmlToJSON(fullPath, MetaXml.GetXml(ymtFile, out _));
+                            var xmlFile = MetaXml.GetXml(ymtFile, out _);
+
+                            Utils.XmlToJSON(fullPath, xmlFile, false);
 						} else {
+                            //var data = Encoding.UTF8.GetString(entry.File.ExtractFile(entry as RpfBinaryFileEntry));
+                            //XDocument doc = XDocument.Parse(data);
+
+                            //hashes.AddRange(doc.DescendantNodes().OfType<XText>().Select(x => x.Value).Distinct().ToList());
+
                             Utils.XmlToJSON(fullPath, entry.File.ExtractFile(entry as RpfBinaryFileEntry));
 						}
 					}
                 }
-            }
+            }*/
 
-            SortedDictionary<string, int> vehicleMap = new SortedDictionary<string, int>();
+            /*Dictionary<uint, string> hashLookup = new Dictionary<uint, string>();
+            foreach(var h in hashes)
+            {
+                hashLookup.TryAdd(JenkHash.GenHash(h), h);
+                hashLookup.TryAdd(JenkHash.GenHash(h.ToLower()), h);
+			}*/
+
+            /*DirectoryInfo outputDir = new DirectoryInfo(Environment.CurrentDirectory + outputPath);
+            Utils.Log.Info("Try to lookup hashes in ymt files");
+            {
+                foreach (var fileInfo in outputDir.GetFiles("*.ymt", SearchOption.AllDirectories))
+                {
+                    var shit = File.ReadAllText(fileInfo.FullName);
+                    Regex hashRx = new Regex(@"\bhash_(\w+)\b", RegexOptions.Compiled | RegexOptions.IgnoreCase);
+                    MatchCollection hashMatches = hashRx.Matches(shit);
+                    foreach (Match hash in hashMatches)
+                    {
+                        var hashString = Convert.ToUInt32(hash.Groups[1].ToString(), 16);
+
+                        if (hashLookup.ContainsKey(hashString))
+                        {
+                            string lookupString = hashLookup[hashString];
+
+                            shit = shit.Replace(hash.Groups[0].ToString(), lookupString);
+                        }
+                    }
+
+                    File.WriteAllText(fileInfo.FullName, shit);
+                }
+            }*/
+
+            /*SortedDictionary<string, int> vehicleMap = new SortedDictionary<string, int>();
             Utils.Log.Info("Extracting all the vehicles name from vehicles.json files");
             {
                 Regex modelRx = new Regex("\"modelName\": *\"(.*)\"", RegexOptions.Compiled | RegexOptions.IgnoreCase);
@@ -149,9 +197,14 @@ namespace AltV.Generator
                     Utils.Log.Status($"Processing vehicles wheels number: {vehicleDone}/{vehicleCount} - {percentage}% - {vehicle.GetShortNameLower()}");
                 }
 
-                Utils.Log.Info("Saving vehicles wheels count to \"vehicles_wheel.json\"");
-                File.WriteAllText(outputPath + "vehicleList.json", JsonConvert.SerializeObject(vehicleMap, Formatting.Indented));
-			}
+                Utils.Log.Info("Saving vehicles list and wheels count to \"vehicleList.json\"");
+                File.WriteAllText(outputPath + "vehicleList.json", JsonConvert.SerializeObject(vehicleMap, Newtonsoft.Json.Formatting.Indented));
+			}*/
+
+            var carcolData = File.ReadAllText(outputPath + "carcols.json");
+            dynamic carcolJson = JsonConvert.DeserializeObject(carcolData);
+
+            VehicleMods.GenerateBin(outputPath, outputPath + "vehmods.bin");
         }
     }
 }

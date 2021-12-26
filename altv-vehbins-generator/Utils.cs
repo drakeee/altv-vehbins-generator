@@ -2,6 +2,7 @@
 using RageKit.GameFiles;
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Text;
@@ -32,8 +33,15 @@ namespace AltV.Generator
                     return;
 				}
 
+                StackTrace stackTrace = (new System.Diagnostics.StackTrace());
+                Console.ForegroundColor = ConsoleColor.White;
+                Console.Write("[");
+                Console.ForegroundColor = ConsoleColor.DarkGray;
+                Console.Write($"{stackTrace.GetFrame(2).GetMethod().DeclaringType}");
+                Console.ForegroundColor = ConsoleColor.White;
+                Console.Write("] ");
                 Console.ForegroundColor = color;
-                Console.Write($"> {(new System.Diagnostics.StackTrace()).GetFrame(1).GetMethod().Name.ToUpper()} ");
+                Console.Write($"{stackTrace.GetFrame(1).GetMethod().Name.ToUpper()} ");
                 Console.ResetColor();
                 Console.ForegroundColor = ConsoleColor.White;
 
@@ -55,15 +63,18 @@ namespace AltV.Generator
             return manager.EntryDict.Where(x => x.Value.Name.StartsWith(search)).Select(x => x.Value).ToList();
         }
 
-        public static void XmlToJSON(string path, byte[] data)
+        public static void XmlToJSON(string path, byte[] data, bool changeExtension = true)
         {
             XmlToJSON(path, Encoding.UTF8.GetString(data));
 		}
 
-        public static void XmlToJSON(string path, string data)
+        public static void XmlToJSON(string path, string data, bool changeExtension = true)
         {
             string directory = Path.GetDirectoryName(path);
-            path = Path.ChangeExtension(path, ".json");
+            
+            if(changeExtension)
+                path = Path.ChangeExtension(path, ".json");
+
             Directory.CreateDirectory(directory);
 
             File.WriteAllText(path, XmlToJSON(data));

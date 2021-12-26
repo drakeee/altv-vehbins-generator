@@ -7,27 +7,17 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <None Remove="build.py" />
     <None Remove="Resources\gtav_aes_key.dat" />
     <None Remove="Resources\gtav_hash_lut.dat" />
     <None Remove="Resources\gtav_ng_decrypt_tables.dat" />
     <None Remove="Resources\gtav_ng_encrypt_luts.dat" />
     <None Remove="Resources\gtav_ng_encrypt_tables.dat" />
     <None Remove="Resources\gtav_ng_key.dat" />
-    <None Remove="vehmodels.py" />
-    <None Remove="vehmods.py" />
   </ItemGroup>
 
   <ItemGroup>
-    <Content Include="vehmodels.py">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </Content>
-    <Content Include="build.py">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </Content>
-    <Content Include="vehmods.py">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </Content>
+    <None Include="bin\Debug\net5.0\carcols.json" />
+    <None Include="bin\Debug\net5.0\carvariations.json" />
   </ItemGroup>
 
   <ItemGroup>
@@ -43,12 +33,21 @@
       <AutoGen>True</AutoGen>
       <DependentUpon>Keys.resx</DependentUpon>
     </Compile>
+    <Compile Update="Base.Designer.cs">
+      <DesignTime>True</DesignTime>
+      <AutoGen>True</AutoGen>
+      <DependentUpon>Base.resx</DependentUpon>
+    </Compile>
   </ItemGroup>
 
   <ItemGroup>
     <EmbeddedResource Update="Keys.resx">
       <Generator>ResXFileCodeGenerator</Generator>
       <LastGenOutput>Keys.Designer.cs</LastGenOutput>
+    </EmbeddedResource>
+    <EmbeddedResource Update="Base.resx">
+      <Generator>ResXFileCodeGenerator</Generator>
+      <LastGenOutput>Base.Designer.cs</LastGenOutput>
     </EmbeddedResource>
   </ItemGroup>
 
