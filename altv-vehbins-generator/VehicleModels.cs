@@ -294,6 +294,7 @@ namespace AltV.Generator
             Utils.Log.Warning("MAKE SURE TO KEEP UP-TO-DATE \"vehicleExtras.json\" FILE!");
             Console.WriteLine("");
             Utils.Log.Info("Here's a little how-to create it:");
+            Utils.Log.Warning("IN ORDER TO GET THE VEHICLES EXTRAS YOU NEED AN INTERNAL BUILD WITH VehicleStruct INCREASED TO 1000!");
             Utils.Log.Info("1. Copy & paste the resource (\"dump-extras\") located in \"Scripts\" folder to your server's resources folder.");
             Utils.Log.Info("2. Open \"Client.js\" file inside \"dump-extras\" folder.");
             Utils.Log.Info($"3. Open \"{Path.GetFullPath(sourcePath) + "vehicleList.json"}\" file, copy the JSON array and overwrite \"vehicleList\" variable's value inside \"Client.js\" file.");
