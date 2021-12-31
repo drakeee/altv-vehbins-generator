@@ -31,7 +31,7 @@ namespace AltV.Generator
                 {
                     Console.Title = message;
                     return;
-				}
+                }
 
                 StackTrace stackTrace = (new System.Diagnostics.StackTrace());
                 Console.ForegroundColor = ConsoleColor.White;
