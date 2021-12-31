@@ -66,7 +66,7 @@ namespace AltV.Generator
         public static void XmlToJSON(string path, byte[] data, bool changeExtension = true)
         {
             XmlToJSON(path, Encoding.UTF8.GetString(data));
-		}
+        }
 
         public static void XmlToJSON(string path, string data, bool changeExtension = true)
         {
@@ -78,7 +78,7 @@ namespace AltV.Generator
             Directory.CreateDirectory(directory);
 
             File.WriteAllText(path, XmlToJSON(data));
-		}
+        }
 
         public static string XmlToJSON(string data)
         {
@@ -86,7 +86,7 @@ namespace AltV.Generator
             xml.LoadXml(data);
 
             return JsonConvert.SerializeXmlNode(xml, Newtonsoft.Json.Formatting.Indented);
-		}
+        }
 
         public static List<RpfEntry> SearchFiles(RpfFile rpfFile, List<string> filesToSearch)
         {
