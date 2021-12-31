@@ -1,5 +1,6 @@
 ﻿using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
+using RageKit.GameFiles;
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -9,7 +10,7 @@ using System.Threading.Tasks;
 
 namespace AltV.Generator
 {
-	static class VehicleMods
+	public class VehicleMods : Generator
 	{
         private static readonly ushort FILE_VERSION = 1;
         enum ModType
@@ -75,6 +76,13 @@ namespace AltV.Generator
             public int Id;
             public string KitName;
             public Dictionary<int, List<int>> Kits;
+        }
+
+        private RpfManager rpfManager = null;
+
+        public VehicleMods(RpfManager rpfManager, string sourcePath) : base(sourcePath)
+        {
+            this.rpfManager = rpfManager;
         }
 
         private static List<ModKit> ParseCarcol(string filePath)
@@ -144,7 +152,7 @@ namespace AltV.Generator
         /// </summary>
         /// <param name="sourcePath">Where carcols.json files located at</param>
         /// <param name="outputFilePath">Where the bin file should save to</param>
-        public static void GenerateBin(string sourcePath, string outputFilePath)
+        public override void GenerateBin(string outputFilePath)
         {
             if(!Directory.Exists(sourcePath))
             {
@@ -153,44 +161,33 @@ namespace AltV.Generator
                 return;
 			}
 
-            List<string> dlcList = GetDLC(sourcePath);
+            List<string> dlcList = GetDLC();
             if(dlcList.Count == 0)
             {
                 return;
 			}
-            dlcList.Insert(0, ".");
-
-            List<string> searchPath = new List<string>()
-            {
-                "./",
-                "./dlcpacks/",
-                "./dlc_patch/"
-            };
 
             Utils.Log.Info($"Process all \"carcols.json\" file inside \"{sourcePath}\"");
 
             List<ModKit> modKits = new List<ModKit>();
-            foreach(var search in searchPath)
+            foreach (var dlc in dlcList)
             {
-                foreach (var dlc in dlcList)
-                {
-                    string dlcPath = Path.DirectorySeparatorChar + dlc + Path.DirectorySeparatorChar;
-                    string filePath = sourcePath + search + dlcPath + "carcols.json";
+                string dlcPath = dlc + Path.DirectorySeparatorChar;
+                string filePath = sourcePath + dlcPath + "carcols.json";
 
-                    if (!File.Exists(filePath))
-                        continue;
+                if (!File.Exists(filePath))
+                    continue;
 
-                    var carcol = ParseCarcol(filePath);
-                    modKits = modKits.Concat(carcol)
-                        .ToLookup(p => p.KitName)
-                        .Select(g => g.Aggregate((p1, p2) => new ModKit
-                        {
-                            Id = p2.Id,
-                            KitName = p2.KitName,
-                            Kits = p2.Kits
-                        })).ToList();
-                }
-			}
+                var carcol = ParseCarcol(filePath);
+                modKits = modKits.Concat(carcol)
+                    .ToLookup(p => p.KitName)
+                    .Select(g => g.Aggregate((p1, p2) => new ModKit
+                    {
+                        Id = p2.Id,
+                        KitName = p2.KitName,
+                        Kits = p2.Kits
+                    })).ToList();
+            }
 
             modKits = modKits.OrderBy(x => x.Id).ToList();
 
@@ -224,22 +221,5 @@ namespace AltV.Generator
                 }
             }
         }
-
-        private static List<string> GetDLC(string sourcePath)
-        {
-            List<string> tempList = new List<string>();
-
-            if (!File.Exists(sourcePath + "dlclist.json"))
-            {
-                Utils.Log.Error($"\"dlclist.json\" was not found in path.");
-                Utils.Log.Error("Aborting...");
-                return tempList;
-			}
-
-            dynamic dlcList = JsonConvert.DeserializeObject(File.ReadAllText(sourcePath + "dlclist.json"));
-            var dlcOrder = ((JArray)dlcList["SMandatoryPacksData"]["Paths"]["Item"]).Select(x => x.ToString().Split('/').Reverse().Skip(1).FirstOrDefault().ToLower()).ToList();
-
-            return dlcOrder;
-		}
     }
 }

@@ -85,7 +85,6 @@ namespace AltV.Generator
             };
 
             Regex rx = new Regex(@"\b(dlc_patch|dlcpacks)\\(\w+)\b", RegexOptions.Compiled | RegexOptions.IgnoreCase);
-            //List<string> hashes = new List<string>();
             foreach (var fileSearch in filesToSearch)
             {
                 Utils.Log.Info($"Extracting \"{fileSearch}\" files for further processing");
@@ -121,56 +120,11 @@ namespace AltV.Generator
                 }
             }
 
-            SortedDictionary<string, int> vehicleMap = new SortedDictionary<string, int>();
-            Utils.Log.Info("Extracting all the vehicles name from vehicles.json files");
-            {
-                Regex modelRx = new Regex("\"modelName\": *\"(.*)\"", RegexOptions.Compiled | RegexOptions.IgnoreCase);
+            VehicleMods vehicleMods = new VehicleMods(rpfManager, outputPath);
+            vehicleMods.GenerateBin(outputPath + "vehmods.bin");
 
-                DirectoryInfo outputDir = new DirectoryInfo(Environment.CurrentDirectory + outputPath);
-                foreach (var fileInfo in outputDir.GetFiles("vehicles.json", SearchOption.AllDirectories))
-                {
-                    string data = File.ReadAllText(fileInfo.FullName);
-                    var matches = modelRx.Matches(data);
-
-                    foreach (Match match in matches)
-                    {
-                        var groups = match.Groups;
-                        vehicleMap[groups[1].ToString().ToLower()] = -1;
-                    }
-                }
-            }
-            Utils.Log.Info($"Collected {vehicleMap.Count} vehicles");
-
-            Utils.Log.Info("Extracting vehicles wheels number from yft files");
-            {
-                var vehicles = rpfManager.AllRpfs.Where(x => x.Path.Contains("vehicles")).SelectMany(x => x.AllEntries).Where(x => vehicleMap.Any(check => x.Name.StartsWith(check.Key.ToLower() + ".yft"))).GroupBy(x => x.Name).Select(x => x.First()).ToList();
-                if(vehicles.Count != vehicleMap.Count)
-                {
-                    Utils.Log.Error("An error occured while looking for vehicles yft file, looks like didn't catch all of them");
-                    Utils.Log.Error($"Collected {vehicleMap.Count} vehicles from vehicles.meta but found only {vehicles.Count} models");
-                    Utils.Log.Error("Aborting...");
-                    return;
-                }
-
-                foreach (RpfResourceFileEntry vehicle in vehicles)
-                {
-                    YftFile veh = new YftFile();
-                    veh.Load(vehicle.File.ExtractFile(vehicle), vehicle);
-
-                    vehicleMap[vehicle.GetShortNameLower()] = veh.Fragment.Drawable.Skeleton.Bones.Items.Where(x => x.Name.Contains("wheel_")).ToList().Count;
-                    veh = null;
-
-                    var vehicleCount = vehicleMap.Count;
-                    var vehicleDone = vehicleMap.Where(x => x.Value > -1).ToList().Count;
-                    var percentage = (uint)(((vehicleDone * 1.0) / (vehicleCount * 1.0)) * 100.0);
-                    Utils.Log.Status($"Processing vehicles wheels number: {vehicleDone}/{vehicleCount} - {percentage}% - {vehicle.GetShortNameLower()}");
-                }
-
-                Utils.Log.Info("Saving vehicles list and wheels count to \"vehicleList.json\"");
-                File.WriteAllText(outputPath + "vehicleList.json", JsonConvert.SerializeObject(vehicleMap, Newtonsoft.Json.Formatting.Indented));
-			}
-
-            VehicleMods.GenerateBin(outputPath, outputPath + "vehmods.bin");
+            VehicleModels vehicleModels = new VehicleModels(rpfManager, outputPath);
+            vehicleModels.GenerateBin(outputPath + "vehmodels.bin");
         }
     }
 }
