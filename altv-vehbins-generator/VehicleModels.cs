@@ -350,7 +350,7 @@ namespace AltV.Generator
                     writer.Write(Convert.ToUInt32(mod.Value.Hash));
                     writer.Write((byte)mod.Key.Length);
                     writer.Write(mod.Key.ToCharArray());
-                    writer.Write((int)mod.Value.Type);
+                    writer.Write((byte)mod.Value.Type);
                     writer.Write((byte)mod.Value.WheelsCount);
                     writer.Write(mod.Value.HasArmoredWindows);
                     writer.Write((byte)mod.Value.PrimaryColor);
